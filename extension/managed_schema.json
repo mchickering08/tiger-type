@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "serverUrl": {
+      "title": "Tiger Type server URL",
+      "description": "Where the Tiger Type server lives, e.g. https://tigertype.yourschool.org",
+      "type": "string"
+    },
+    "lockSettings": {
+      "title": "Lock settings",
+      "description": "If true, students can't turn Tiger Type off for individual sites.",
+      "type": "boolean"
+    },
+    "blockedSites": {
+      "title": "Blocked sites",
+      "description": "Domains where Tiger Type never runs (in addition to the ones set on the admin page).",
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

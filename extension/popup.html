@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin:0; width:320px; font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#111; background:#fff; }
+  header { display:flex; align-items:center; gap:10px; padding:18px 20px 16px; border-bottom:1px solid #EFEDEA; }
+  header img { width:34px; height:34px; }
+  h1 { margin:0; flex:1; font-size:18px; font-weight:800; letter-spacing:-0.01em; }
+  .pill { padding:3px 10px; border-radius:99px; font-size:12px; font-weight:800; letter-spacing:.04em; }
+  .pill.on { background:#FFF1E8; color:#9A3D00; }
+  .pill.off { background:#F1F0EE; color:#5C5C5C; }
+  .pill.err { background:#FDECEC; color:#9B1C1C; }
+  main { padding:18px 20px; display:flex; flex-direction:column; gap:18px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .label { font-size:12px; color:#5C5C5C; }
+  .site { font-size:15px; font-weight:700; word-break:break-all; }
+  .reason { font-size:13px; color:#5C5C5C; margin-top:-8px; }
+  .reason:empty { display:none; }
+  .switch { position:relative; width:48px; height:28px; flex-shrink:0; }
+  .switch input { position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; z-index:1; }
+  .switch input:disabled { cursor:not-allowed; }
+  .switch span { position:absolute; inset:0; border-radius:14px; background:#D6D3CF; transition:background .15s; }
+  .switch span::after { content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(17,17,17,.25); transition:transform .15s; }
+  .switch input:checked + span { background:#F26B1D; }
+  .switch input:checked + span::after { transform:translateX(20px); }
+  .switch input:disabled + span { opacity:.5; }
+  .switch input:focus-visible + span { outline:2px solid #111; outline-offset:2px; }
+  .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .stat { padding:12px 10px; border-radius:12px; background:#F6F5F3; display:flex; flex-direction:column; gap:2px; }
+  .stat b { font-size:22px; font-weight:800; }
+  .stat span { font-size:12px; color:#5C5C5C; }
+  .legend { display:flex; gap:16px; font-size:12px; color:#5C5C5C; }
+  .legend span { display:flex; align-items:center; gap:6px; }
+  .legend i { width:16px; height:3px; border-radius:2px; display:inline-block; }
+  .legend i.dotted { height:0; border-top:3px dotted #6B6B6B; border-radius:0; }
+  footer { padding:14px 20px; border-top:1px solid #EFEDEA; text-align:center; font-size:12px; font-weight:600; color:#5C5C5C; }
+</style>
+</head>
+<body>
+<header>
+  <img src="icons/48.png" alt="">
+  <h1>Tiger Type</h1>
+  <span id="pill" class="pill off">…</span>
+</header>
+<main>
+  <div class="row">
+    <div>
+      <div class="label">Check my writing on</div>
+      <div id="site" class="site"></div>
+    </div>
+    <label class="switch"><input id="siteToggle" type="checkbox" aria-label="Check my writing on this site"><span></span></label>
+  </div>
+  <div id="reason" class="reason"></div>
+  <div class="stats">
+    <div class="stat"><b id="c-spelling">0</b><span>Spelling</span></div>
+    <div class="stat"><b id="c-grammar">0</b><span>Grammar</span></div>
+    <div class="stat"><b id="c-style">0</b><span>Style</span></div>
+  </div>
+  <div class="legend">
+    <span><i style="background:#F26B1D"></i>Spelling</span>
+    <span><i style="background:#2F6FEB"></i>Grammar</span>
+    <span><i class="dotted"></i>Style</span>
+  </div>
+</main>
+<footer>By Student Government 2026-2027</footer>
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+# Starts everything: LanguageTool (rule-based, no AI add-ons installed) + the Tiger Type backend.
+#   ADMIN_PASSWORD=pick-something docker compose up -d
+# Then: backend at http://localhost:8000, admin page at http://localhost:8000/admin
+
+services:
+  languagetool:
+    image: erikvl87/languagetool:latest
+    restart: unless-stopped
+    environment:
+      - Java_Xms=512m
+      - Java_Xmx=1g
+    # Not exposed publicly. Only the backend talks to it.
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      - languagetool
+    environment:
+      - LT_URL=http://languagetool:8010
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?Set ADMIN_PASSWORD before starting}
+    volumes:
+      - tigertype-data:/data
+    ports:
+      - "8000:8000"
+
+volumes:
+  tigertype-data:

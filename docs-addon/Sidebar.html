@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<base target="_top">
+<style>
+  body { margin:0; padding:12px; font:13px/1.45 Arial,sans-serif; color:#111111; }
+  button { font:inherit; cursor:pointer; }
+  .check { width:100%; background:#F26B1D; color:#111111; border:0; border-radius:6px; padding:9px; font-weight:bold; }
+  .check:disabled { background:#98a2b3; }
+  #status { color:#667085; margin:10px 0; }
+  .item { border:1px solid #e4e7ec; border-radius:8px; padding:10px; margin-bottom:8px; }
+  .kind { font-size:11px; font-weight:bold; text-transform:uppercase; color:#667085; display:flex; align-items:center; gap:5px; }
+  .dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+  .ctx { margin:6px 0; color:#475467; }
+  .ctx b { background:#FFF1E8; color:#9A3D00; font-weight:normal; border-radius:2px; padding:0 1px; }
+  .msg { margin-bottom:8px; }
+  .reps { display:flex; flex-wrap:wrap; gap:5px; }
+  .rep { border:0; background:#111111; color:#fff; border-radius:5px; padding:4px 9px; }
+  .links { margin-top:8px; display:flex; gap:12px; }
+  .link { border:0; background:none; color:#667085; padding:0; text-decoration:underline; }
+</style>
+</head>
+<body>
+<button class="check" id="go" onclick="run()">Check document</button>
+<div id="status">Click to check your document.</div>
+<div id="list"></div>
+<script>
+  const COLORS = { spelling:'#F26B1D', grammar:'#2F6FEB', style:'#6B6B6B' };
+  const ignored = new Set();
+  let matches = [];
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  function run() {
+    document.getElementById('go').disabled = true;
+    document.getElementById('status').textContent = 'Checking…';
+    google.script.run.withSuccessHandler(show).withFailureHandler(fail).checkDocument();
+  }
+
+  function fail(err) {
+    document.getElementById('go').disabled = false;
+    document.getElementById('status').textContent = 'Error: ' + err.message;
+  }
+
+  function show(data) {
+    document.getElementById('go').disabled = false;
+    const status = document.getElementById('status');
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    if (!data.enabled) { status.textContent = 'Tiger Type is turned off by your school right now.'; return; }
+    if (data.tooLong) { status.textContent = 'This document is too long to check in one go (20,000 characters max).'; return; }
+    matches = data.matches.filter(m => !ignored.has(m.rule + '|' + m.text));
+    status.textContent = matches.length ? matches.length + ' issue' + (matches.length === 1 ? '' : 's') + ' found' : 'No issues found. ✓';
+    matches.forEach((m, i) => {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML =
+        '<div class="kind"><span class="dot" style="background:' + (COLORS[m.kind] || COLORS.grammar) + '"></span>' + esc(m.kind) + '</div>' +
+        '<div class="ctx">' + esc(m.context.before) + '<b>' + esc(m.context.hit) + '</b>' + esc(m.context.after) + '</div>' +
+        '<div class="msg">' + esc(m.message) + '</div>' +
+        '<div class="reps">' + m.replacements.slice(0, 4).map((r, j) =>
+          '<button class="rep" data-i="' + i + '" data-j="' + j + '">' + (esc(r) || '(remove)') + '</button>').join('') + '</div>' +
+        '<div class="links"><button class="link" data-show="' + i + '">Show in doc</button><button class="link" data-ignore="' + i + '">Ignore</button></div>';
+      list.appendChild(div);
+    });
+  }
+
+  document.getElementById('list').addEventListener('click', e => {
+    const t = e.target;
+    if (t.dataset.j !== undefined) {
+      const m = matches[+t.dataset.i];
+      t.disabled = true;
+      // Recheck after each fix so everything below stays accurate.
+      google.script.run.withSuccessHandler(run).withFailureHandler(fail)
+        .applyFix(m.text, m.occurrence, m.replacements[+t.dataset.j]);
+    } else if (t.dataset.show !== undefined) {
+      const m = matches[+t.dataset.show];
+      google.script.run.selectMatch(m.text, m.occurrence);
+    } else if (t.dataset.ignore !== undefined) {
+      const m = matches[+t.dataset.ignore];
+      ignored.add(m.rule + '|' + m.text);
+      t.closest('.item').remove();
+    }
+  });
+</script>
+</body>
+</html>

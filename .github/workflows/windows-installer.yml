@@ -1,0 +1,108 @@
+# Builds TigerTypeSetup.exe and the Chrome extension zip every time code is pushed to main,
+# then posts both on the repo's Releases page under "latest".
+name: Build Windows installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements.txt pytest
+      - run: pytest -q
+        working-directory: backend
+
+  build:
+    needs: test
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python packages
+        run: pip install -r backend/requirements.txt pyinstaller
+
+      - name: Package the server (PyInstaller)
+        shell: pwsh
+        run: |
+          Copy-Item backend\app.py windows\app.py
+          cd windows
+          pyinstaller --noconfirm --onedir --console --name TigerTypeServer --icon tigertype.ico `
+            --distpath ..\dist --workpath ..\build `
+            --hidden-import app --hidden-import multipart --hidden-import python_multipart `
+            --collect-submodules uvicorn --collect-submodules fastapi --collect-submodules starlette `
+            launcher.py
+
+      - name: Download Java runtime
+        shell: pwsh
+        run: |
+          Invoke-WebRequest "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse" -OutFile jre.zip
+          New-Item -ItemType Directory jre-tmp | Out-Null
+          tar -xf jre.zip -C jre-tmp
+          Move-Item (Get-ChildItem jre-tmp -Directory | Select-Object -First 1).FullName dist\TigerTypeServer\jre
+
+      - name: Download LanguageTool (rule-based grammar engine)
+        shell: pwsh
+        run: |
+          Invoke-WebRequest "https://languagetool.org/download/LanguageTool-stable.zip" -OutFile lt.zip
+          New-Item -ItemType Directory lt-tmp | Out-Null
+          tar -xf lt.zip -C lt-tmp
+          Move-Item (Get-ChildItem lt-tmp -Directory | Select-Object -First 1).FullName dist\TigerTypeServer\languagetool
+          if (-not (Test-Path dist\TigerTypeServer\languagetool\languagetool-server.jar)) { throw "languagetool-server.jar not found" }
+
+      - name: Smoke test with the real grammar engine
+        shell: pwsh
+        run: |
+          $env:TIGERTYPE_NO_BROWSER = "1"
+          $p = Start-Process dist\TigerTypeServer\TigerTypeServer.exe -PassThru -NoNewWindow
+          $ok = $false
+          for ($i = 0; $i -lt 120; $i++) {
+            Start-Sleep 2
+            try { Invoke-RestMethod http://127.0.0.1:8000/health | Out-Null; $ok = $true; break } catch {}
+          }
+          if (-not $ok) { throw "Server never came up" }
+          $body = @{ text = "I will recieve teh package. He go to school." } | ConvertTo-Json
+          $r = Invoke-RestMethod http://127.0.0.1:8000/check -Method Post -ContentType "application/json" -Body $body
+          $r.matches | Format-Table text, kind, message
+          if ($r.matches.Count -lt 2) { throw "Expected the grammar engine to flag mistakes" }
+          Stop-Process -Id $p.Id -Force
+          Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force
+
+      - name: Build installer (Inno Setup)
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows\tigertype.iss
+
+      - name: Zip the Chrome extension
+        shell: pwsh
+        run: Compress-Archive -Path extension\* -DestinationPath dist\TigerType-Extension.zip
+
+      - name: Publish to Releases
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag 2>$null
+          $notes = @"
+          **TigerTypeSetup.exe**: double-click to install the Tiger Type server on Windows. Windows may say it protected your PC because the installer isn't signed. Click **More info**, then **Run anyway**.
+
+          **TigerType-Extension.zip**: the Chrome extension. Unzip it, go to chrome://extensions, turn on Developer mode, click Load unpacked, and pick the unzipped folder.
+
+          Built from commit ${{ github.sha }}.
+          "@
+          gh release create latest dist\TigerTypeSetup.exe dist\TigerType-Extension.zip --title "Tiger Type (latest build)" --notes $notes --latest

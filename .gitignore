@@ -1,0 +1,8 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+backend/settings.json
+build/
+dist/
+windows/app.py
+*.spec

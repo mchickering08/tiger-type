@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin:0; padding:20px; min-width:360px; font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#111; }
+  h1 { font-size:16px; margin:0 0 4px; }
+  p { margin:0 0 12px; color:#5C5C5C; }
+  label { display:block; font-weight:700; margin-bottom:6px; }
+  input { width:100%; box-sizing:border-box; font:inherit; padding:8px 10px; border:1px solid #D6D3CF; border-radius:8px; }
+  button { margin-top:10px; border:0; border-radius:8px; padding:8px 14px; background:#F26B1D; color:#111; font:inherit; font-weight:800; cursor:pointer; }
+  #msg { margin-top:10px; color:#5C5C5C; }
+</style>
+</head>
+<body>
+<h1>Tiger Type server</h1>
+<p id="managed">Leave this as is unless someone tells you to change it.</p>
+<label for="serverUrl">Server address</label>
+<input id="serverUrl" type="text" placeholder="http://localhost:8000">
+<button id="save">Save</button>
+<div id="msg"></div>
+<script src="options.js"></script>
+</body>
+</html>
