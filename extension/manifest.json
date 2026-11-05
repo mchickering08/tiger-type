@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tiger Type",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Spelling and grammar checking by GCDS Student Government. Rule-based, no AI.",
   "permissions": [
     "storage",

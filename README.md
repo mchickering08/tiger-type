@@ -35,7 +35,7 @@ The extension talks to `http://localhost:8000` by default, which is where the in
 |---|---|
 | `backend/` | Python server (FastAPI). Talks to LanguageTool, applies admin settings, serves the admin page at `/admin`. |
 | `extension/` | Chrome extension. Underlines mistakes in text boxes with fix-it cards, plus a popup with issue counts. |
-| `docs-addon/` | Google Docs add-on (for later, needs a public server). Sidebar that checks the whole doc. |
+| `docs-addon/` | Google Docs add-on. Live checking in a sidebar, highlights mistakes in the doc, one-click Replace. Talks to the server through the extension. |
 | `windows/` | The Windows launcher and installer script. |
 | `.github/workflows/` | Builds the installer on GitHub's Windows machines and posts it to Releases. |
 | `docker-compose.yml` | Alternative: run everything on a Linux/Mac server with Docker. |
@@ -65,7 +65,7 @@ The installer runs the server on one Windows computer, which is perfect for test
    - To let other computers reach a Windows install, set the environment variable `TIGERTYPE_SHARE=1` before starting it, and allow it through Windows Firewall.
 2. **Publish the extension** on the Chrome Web Store as **Private** (only GCDS Google accounts can see it). Upload `TigerType-Extension.zip`. One-time $5 developer fee.
 3. **IT force-installs it** from the Google Admin console (Devices > Chrome > Apps & extensions > add by ID > Force install) and sets the policy above.
-4. **Docs add-on:** at [script.google.com](https://script.google.com), make a project, paste in the files from `docs-addon/`, set the script property `TIGERTYPE_SERVER` to the server's public https address, and update `urlFetchWhitelist` in `appsscript.json`. IT can publish it privately to the school's domain.
+4. **Docs add-on:** to try it in one doc, open the doc, go to Extensions → Apps Script, name the project "Tiger Type", and paste in the three files from `docs-addon/` (Code.gs, an HTML file named `Sidebar`, and appsscript.json via Project Settings → "Show appsscript.json"). Reload the doc. For the whole school, IT publishes it privately to the domain through the Google Workspace Marketplace, and then it's in every doc. It checks through the Tiger Type extension; set the script property `TIGERTYPE_SERVER` to a public https address (and update `urlFetchWhitelist`) if you want it to work without the extension.
 
 ## Privacy
 
@@ -74,7 +74,7 @@ The installer runs the server on one Windows computer, which is perfect for test
 
 ## Known limits
 
-- **Google Docs gets a side panel, not inline underlines.** Docs draws text on a canvas that extensions can't read. In a Doc, click the Tiger Type icon, then **Check this doc**. The panel lists every issue with its paragraph. Click a suggestion to copy it.
+- **Google Docs works through an add-on, not inline underlines.** Docs draws text on a canvas, and only extensions Google approved (Grammarly, LanguageTool, etc.) can draw on it. The Tiger Type add-on (Extensions → Tiger Type → Open Tiger Type) checks live while its sidebar is open, highlights mistakes, and replaces them in one click. The highlights are real formatting, so they show in version history; the sidebar's "Remove highlights" button clears them and never touches highlights you made. Without the add-on, the extension's **Check this doc** button lists issues in a side panel.
 - **Rule-based means fewer catches than Grammarly.** Good at spelling, agreement, punctuation, and commonly confused words. Weak on clarity and tone. That's the price of no AI.
 - **Some fancy editors won't line up perfectly.** Fields marked `spellcheck="false"` (usually code boxes) are skipped.
 - **Max 20,000 characters per check.**

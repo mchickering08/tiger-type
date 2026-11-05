@@ -3,85 +3,365 @@
 <head>
 <base target="_top">
 <style>
-  body { margin:0; padding:12px; font:13px/1.45 Arial,sans-serif; color:#111111; }
-  button { font:inherit; cursor:pointer; }
-  .check { width:100%; background:#F26B1D; color:#111111; border:0; border-radius:6px; padding:9px; font-weight:bold; }
-  .check:disabled { background:#98a2b3; }
-  #status { color:#667085; margin:10px 0; }
-  .item { border:1px solid #e4e7ec; border-radius:8px; padding:10px; margin-bottom:8px; }
-  .kind { font-size:11px; font-weight:bold; text-transform:uppercase; color:#667085; display:flex; align-items:center; gap:5px; }
-  .dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
-  .ctx { margin:6px 0; color:#475467; }
-  .ctx b { background:#FFF1E8; color:#9A3D00; font-weight:normal; border-radius:2px; padding:0 1px; }
-  .msg { margin-bottom:8px; }
-  .reps { display:flex; flex-wrap:wrap; gap:5px; }
-  .rep { border:0; background:#111111; color:#fff; border-radius:5px; padding:4px 9px; }
-  .links { margin-top:8px; display:flex; gap:12px; }
-  .link { border:0; background:none; color:#667085; padding:0; text-decoration:underline; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:13px/1.45 Arial,Helvetica,sans-serif; color:#111; background:#fff; }
+  header { display:flex; align-items:center; gap:8px; padding:12px 14px; border-bottom:1px solid #EFEDEA; }
+  header h1 { margin:0; flex:1; font-size:16px; font-weight:800; }
+  .live { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#5C5C5C; text-transform:uppercase; letter-spacing:.05em; }
+  .live i { width:8px; height:8px; border-radius:50%; background:#D6D3CF; }
+  .live.on i { background:#F26B1D; }
+  main { padding:12px 14px 16px; display:flex; flex-direction:column; gap:12px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .row label { font-weight:700; cursor:pointer; }
+  .switch { position:relative; width:40px; height:24px; flex-shrink:0; }
+  .switch input { position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; z-index:1; }
+  .switch span { position:absolute; inset:0; border-radius:12px; background:#D6D3CF; transition:background .15s; }
+  .switch span::after { content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.25); transition:transform .15s; }
+  .switch input:checked + span { background:#F26B1D; }
+  .switch input:checked + span::after { transform:translateX(16px); }
+  #status { color:#5C5C5C; }
+  #status.error { color:#9B1C1C; }
+  .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+  .stat { padding:8px; border-radius:10px; background:#F6F5F3; display:flex; flex-direction:column; }
+  .stat b { font-size:18px; font-weight:800; }
+  .stat span { font-size:11px; color:#5C5C5C; display:flex; align-items:center; gap:5px; }
+  .stat span i { width:8px; height:8px; border-radius:2px; }
+  #list { display:flex; flex-direction:column; gap:8px; }
+  .item { border:1px solid #E7E5E2; border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+  .top { display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#5C5C5C; }
+  .top .where { margin-left:auto; text-transform:none; letter-spacing:0; font-weight:400; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .ctx { color:#3A3A3A; cursor:pointer; }
+  .ctx:hover { color:#111; }
+  .ctx mark { color:#111; border-radius:2px; padding:0 1px; }
+  .reps { display:flex; flex-wrap:wrap; gap:6px; }
+  .rep { border:0; border-radius:8px; padding:6px 10px; min-height:30px; background:#111; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+  .rep:hover { background:#333; }
+  .rep:disabled { background:#98A2B3; cursor:default; }
+  .links { display:flex; justify-content:flex-end; gap:12px; }
+  .link { border:0; background:none; padding:2px; color:#5C5C5C; font:inherit; font-weight:700; cursor:pointer; }
+  .link:hover { color:#111; }
+  footer { padding:10px 14px 14px; display:flex; flex-direction:column; gap:8px; align-items:center; border-top:1px solid #EFEDEA; }
+  .clear { border:1px solid #D6D3CF; background:#fff; border-radius:8px; padding:6px 12px; font:inherit; font-weight:700; cursor:pointer; }
+  .credit { font-size:11px; font-weight:700; color:#5C5C5C; }
+  [hidden] { display:none !important; }
 </style>
 </head>
 <body>
-<button class="check" id="go" onclick="run()">Check document</button>
-<div id="status">Click to check your document.</div>
-<div id="list"></div>
+<header>
+  <svg width="26" height="26" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="25" cy="27" r="12" fill="#F26B1D"/><circle cx="75" cy="27" r="12" fill="#F26B1D"/>
+    <circle cx="25" cy="27" r="5" fill="#111"/><circle cx="75" cy="27" r="5" fill="#111"/>
+    <rect x="12" y="22" width="76" height="66" rx="32" fill="#F26B1D"/>
+    <path d="M43 22 Q50 37 57 22 Z" fill="#111"/>
+    <path d="M12 52 Q22 52 28 59 Q20 60 12 58 Z" fill="#111"/><path d="M88 52 Q78 52 72 59 Q80 60 88 58 Z" fill="#111"/>
+    <circle cx="37" cy="51" r="5" fill="#111"/><circle cx="63" cy="51" r="5" fill="#111"/>
+    <ellipse cx="50" cy="71" rx="17" ry="12" fill="#fff"/><path d="M44.5 63 L55.5 63 L50 69.5 Z" fill="#111"/>
+  </svg>
+  <h1>Tiger Type</h1>
+  <div id="live" class="live"><i></i><span id="liveText">Starting</span></div>
+</header>
+<main>
+  <div class="row">
+    <label for="hl">Highlight mistakes in doc</label>
+    <span class="switch"><input id="hl" type="checkbox" checked><span></span></span>
+  </div>
+  <div id="status">Reading your doc…</div>
+  <div id="stats" class="stats" hidden>
+    <div class="stat"><b id="c-spelling">0</b><span><i style="background:#ffd9c2;border:1px solid #F26B1D"></i>Spelling</span></div>
+    <div class="stat"><b id="c-grammar">0</b><span><i style="background:#d6e4ff;border:1px solid #2F6FEB"></i>Grammar</span></div>
+    <div class="stat"><b id="c-style">0</b><span><i style="background:#e6e4e0;border:1px solid #6B6B6B"></i>Style</span></div>
+  </div>
+  <div id="list"></div>
+</main>
+<footer>
+  <button id="clear" class="clear" type="button">Remove highlights</button>
+  <div class="credit">By Student Government 2026-2027</div>
+</footer>
 <script>
-  const COLORS = { spelling:'#F26B1D', grammar:'#2F6FEB', style:'#6B6B6B' };
-  const ignored = new Set();
-  let matches = [];
+  var COLORS = { spelling: '#F26B1D', grammar: '#2F6FEB', style: '#6B6B6B' };
+  var MARKS = { spelling: '#ffd9c2', grammar: '#d6e4ff', style: '#e6e4e0' };
+  var LABELS = { spelling: 'Spelling', grammar: 'Grammar', style: 'Style' };
+  var POLL_MS = 2500;
+  var CHUNK = 18000;
 
-  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  var mode = null;          // 'extension' | 'server'
+  var highlightOn = true;
+  var lastSeen = null;      // doc text at the last poll
+  var lastChecked = null;   // doc text we last checked
+  var issues = [];
+  var ignored = {};
+  var busy = false;
 
-  function run() {
-    document.getElementById('go').disabled = true;
-    document.getElementById('status').textContent = 'Checking…';
-    google.script.run.withSuccessHandler(show).withFailureHandler(fail).checkDocument();
-  }
+  function $(id) { return document.getElementById(id); }
 
-  function fail(err) {
-    document.getElementById('go').disabled = false;
-    document.getElementById('status').textContent = 'Error: ' + err.message;
-  }
-
-  function show(data) {
-    document.getElementById('go').disabled = false;
-    const status = document.getElementById('status');
-    const list = document.getElementById('list');
-    list.innerHTML = '';
-    if (!data.enabled) { status.textContent = 'Tiger Type is turned off by your school right now.'; return; }
-    if (data.tooLong) { status.textContent = 'This document is too long to check in one go (20,000 characters max).'; return; }
-    matches = data.matches.filter(m => !ignored.has(m.rule + '|' + m.text));
-    status.textContent = matches.length ? matches.length + ' issue' + (matches.length === 1 ? '' : 's') + ' found' : 'No issues found. ✓';
-    matches.forEach((m, i) => {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML =
-        '<div class="kind"><span class="dot" style="background:' + (COLORS[m.kind] || COLORS.grammar) + '"></span>' + esc(m.kind) + '</div>' +
-        '<div class="ctx">' + esc(m.context.before) + '<b>' + esc(m.context.hit) + '</b>' + esc(m.context.after) + '</div>' +
-        '<div class="msg">' + esc(m.message) + '</div>' +
-        '<div class="reps">' + m.replacements.slice(0, 4).map((r, j) =>
-          '<button class="rep" data-i="' + i + '" data-j="' + j + '">' + (esc(r) || '(remove)') + '</button>').join('') + '</div>' +
-        '<div class="links"><button class="link" data-show="' + i + '">Show in doc</button><button class="link" data-ignore="' + i + '">Ignore</button></div>';
-      list.appendChild(div);
+  function gs(fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (resolve, reject) {
+      var r = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+      r[fn].apply(r, args);
     });
   }
 
-  document.getElementById('list').addEventListener('click', e => {
-    const t = e.target;
-    if (t.dataset.j !== undefined) {
-      const m = matches[+t.dataset.i];
-      t.disabled = true;
-      // Recheck after each fix so everything below stays accurate.
-      google.script.run.withSuccessHandler(run).withFailureHandler(fail)
-        .applyFix(m.text, m.occurrence, m.replacements[+t.dataset.j]);
-    } else if (t.dataset.show !== undefined) {
-      const m = matches[+t.dataset.show];
-      google.script.run.selectMatch(m.text, m.occurrence);
-    } else if (t.dataset.ignore !== undefined) {
-      const m = matches[+t.dataset.ignore];
-      ignored.add(m.rule + '|' + m.text);
-      t.closest('.item').remove();
+  function hash(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+    return h + ':' + s.length;
+  }
+
+  function setStatus(text, isError) {
+    $('status').textContent = text;
+    $('status').className = isError ? 'error' : '';
+  }
+
+  function setLive(on, text) {
+    $('live').className = 'live' + (on ? ' on' : '');
+    $('liveText').textContent = text;
+  }
+
+  // ---------- talking to the Tiger Type extension ----------
+  // The extension's script on the Docs page relays checks to the Tiger Type server.
+
+  var pending = {};
+  var nextId = 1;
+  var extensionSeen = false;
+
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || typeof d !== 'object' || !d.tigertype) return;
+    if (d.tigertype === 'pong') extensionSeen = true;
+    if (d.tigertype === 'result' && pending[d.id]) {
+      pending[d.id](d);
+      delete pending[d.id];
     }
   });
+
+  function toExtension(msg, timeoutMs) {
+    return new Promise(function (resolve, reject) {
+      var id = nextId++;
+      msg.id = id;
+      var t = setTimeout(function () { delete pending[id]; reject(new Error('no-extension')); }, timeoutMs);
+      pending[id] = function (d) { clearTimeout(t); d.ok ? resolve(d) : reject(new Error(d.error || 'error')); };
+      window.top.postMessage(msg, 'https://docs.google.com');
+    });
+  }
+
+  function findExtension() {
+    window.top.postMessage({ tigertype: 'ping' }, 'https://docs.google.com');
+    return new Promise(function (resolve) {
+      var waited = 0;
+      var iv = setInterval(function () {
+        waited += 100;
+        if (extensionSeen || waited >= 1500) { clearInterval(iv); resolve(extensionSeen); }
+      }, 100);
+    });
+  }
+
+  function checkPiece(text) {
+    if (mode === 'extension') return toExtension({ tigertype: 'check', text: text }, 30000);
+    return gs('checkViaServer', text);
+  }
+
+  // ---------- checking ----------
+
+  function chunks(text) {
+    var out = [], start = 0;
+    while (start < text.length) {
+      var end = Math.min(start + CHUNK, text.length);
+      if (end < text.length) {
+        var nl = Math.max(text.lastIndexOf('\n', end), text.lastIndexOf('\r', end));
+        if (nl > start) end = nl + 1;
+      }
+      out.push({ start: start, text: text.slice(start, end) });
+      start = end;
+    }
+    return out;
+  }
+
+  function paragraphOf(text, offset) {
+    var lines = text.slice(0, offset).split(/\r\n|\r|\n/);
+    var n = 0;
+    for (var i = 0; i < lines.length - 1; i++) if (lines[i].trim()) n++;
+    return n + 1;
+  }
+
+  function context(text, offset, length) {
+    var before = text.slice(Math.max(0, offset - 40), offset).split(/[\r\n]/).pop();
+    var after = text.slice(offset + length, offset + length + 40).split(/[\r\n]/)[0];
+    return {
+      before: (offset - before.length > 0 && before.length >= 40 ? '…' : '') + before,
+      hit: text.slice(offset, offset + length),
+      after: after + (after.length >= 40 ? '…' : ''),
+    };
+  }
+
+  function visible() {
+    return issues.filter(function (m) { return !ignored[m.key]; });
+  }
+
+  async function check(text) {
+    setLive(true, 'Checking');
+    var found = [];
+    var parts = chunks(text);
+    for (var i = 0; i < parts.length; i++) {
+      var res = await checkPiece(parts[i].text);
+      if (res.enabled === false) throw new Error('Tiger Type is turned off by your school right now.');
+      res.matches.forEach(function (m) {
+        var offset = parts[i].start + m.offset;
+        found.push(Object.assign({}, m, {
+          offset: offset,
+          paragraph: paragraphOf(text, offset),
+          context: context(text, offset, m.length),
+          key: m.rule + '|' + m.text,
+        }));
+      });
+    }
+    found.sort(function (a, b) { return a.offset - b.offset; });
+    issues = found;
+    lastChecked = text;
+    await applyHighlights(text);
+    render();
+    setLive(true, 'Live');
+  }
+
+  async function applyHighlights(text) {
+    var res = await gs('syncHighlights', visible(), hash(text), highlightOn);
+    if (!res.ok && res.changed) lastChecked = null; // doc moved on; recheck on next tick
+  }
+
+  async function tick() {
+    if (busy) return;
+    busy = true;
+    try {
+      var text = await gs('getText');
+      if (text === lastChecked) return;
+      // Wait until the text stops changing for one poll, so we don't highlight mid-word.
+      if (lastChecked !== null && text !== lastSeen) {
+        lastSeen = text;
+        setLive(true, 'Typing');
+        return;
+      }
+      lastSeen = text;
+      await check(text);
+    } catch (e) {
+      var msg = String(e && e.message || e);
+      if (msg === 'no-extension') msg = "Can't reach the Tiger Type extension. Make sure it's installed and on, then reload this doc.";
+      else if (/offline|Failed to fetch|reach/i.test(msg)) msg = "Can't reach the Tiger Type server. Is the Tiger Type Server window open?";
+      setStatus(msg, true);
+      setLive(false, 'Paused');
+      lastChecked = null;
+    } finally {
+      busy = false;
+    }
+  }
+
+  // ---------- list ----------
+
+  function mk(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function render() {
+    var shown = visible();
+    var counts = { spelling: 0, grammar: 0, style: 0 };
+    shown.forEach(function (m) { counts[m.kind] = (counts[m.kind] || 0) + 1; });
+    Object.keys(counts).forEach(function (k) { $('c-' + k).textContent = counts[k]; });
+    $('stats').hidden = false;
+    setStatus(shown.length ? shown.length + ' thing' + (shown.length === 1 ? '' : 's') + ' to fix. Click a suggestion to replace it.' : 'No issues found. Nice.');
+
+    var list = $('list');
+    list.replaceChildren();
+    shown.forEach(function (m) {
+      var item = mk('div', 'item');
+      var top = mk('div', 'top');
+      var dot = mk('span', 'dot');
+      dot.style.background = COLORS[m.kind] || COLORS.grammar;
+      top.append(dot, LABELS[m.kind] || 'Grammar', mk('span', 'where', 'Paragraph ' + m.paragraph));
+
+      var ctx = mk('div', 'ctx');
+      ctx.title = 'Show in doc';
+      var mark = mk('mark', '', m.context.hit);
+      mark.style.background = MARKS[m.kind] || MARKS.grammar;
+      ctx.append(m.context.before, mark, m.context.after);
+      ctx.addEventListener('click', function () { gs('selectAt', m.offset, m.text); });
+
+      item.append(top, ctx, mk('div', '', m.message));
+
+      if (m.replacements.length) {
+        var reps = mk('div', 'reps');
+        m.replacements.slice(0, 3).forEach(function (r) {
+          var b = mk('button', 'rep', r || '(remove)');
+          b.addEventListener('click', async function () {
+            reps.querySelectorAll('button').forEach(function (x) { x.disabled = true; });
+            try {
+              var res = await gs('replaceAt', m.offset, m.text, r);
+              if (!res.ok) setStatus("Couldn't find that spot anymore. Rechecking.");
+            } catch (e) {
+              setStatus('Replace failed: ' + (e.message || e), true);
+            }
+            lastChecked = null;
+            lastSeen = null;
+            tick();
+          });
+          reps.append(b);
+        });
+        item.append(reps);
+      }
+
+      var links = mk('div', 'links');
+      var show = mk('button', 'link', 'Show');
+      show.addEventListener('click', function () { gs('selectAt', m.offset, m.text); });
+      var ign = mk('button', 'link', 'Ignore');
+      ign.addEventListener('click', function () {
+        ignored[m.key] = true;
+        render();
+        if (lastChecked !== null) applyHighlights(lastChecked);
+      });
+      links.append(show, ign);
+      item.append(links);
+      list.append(item);
+    });
+  }
+
+  // ---------- controls ----------
+
+  $('hl').addEventListener('change', function () {
+    highlightOn = $('hl').checked;
+    gs('setHighlightPref', highlightOn).then(function () {
+      if (highlightOn && lastChecked !== null) applyHighlights(lastChecked);
+    });
+  });
+
+  $('clear').addEventListener('click', function () {
+    highlightOn = false;
+    $('hl').checked = false;
+    gs('setHighlightPref', false);
+  });
+
+  // ---------- start ----------
+
+  (async function start() {
+    try {
+      var init = await gs('getInit');
+      highlightOn = init.highlightOn;
+      $('hl').checked = highlightOn;
+      if (await findExtension()) mode = 'extension';
+      else if (init.hasServer) mode = 'server';
+      else {
+        setStatus("Can't find the Tiger Type Chrome extension. Install it (or turn it on), then reload this doc.", true);
+        setLive(false, 'Off');
+        return;
+      }
+      tick();
+      setInterval(tick, POLL_MS);
+    } catch (e) {
+      setStatus('Something went wrong: ' + (e.message || e), true);
+      setLive(false, 'Off');
+    }
+  })();
 </script>
 </body>
 </html>
