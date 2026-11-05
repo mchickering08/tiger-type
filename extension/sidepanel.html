@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tiger Type</title>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#111; background:#fff; min-height:100vh; display:flex; flex-direction:column; }
+  header { display:flex; align-items:center; gap:10px; padding:16px 18px 14px; border-bottom:1px solid #EFEDEA; }
+  header img { width:32px; height:32px; }
+  header div { flex:1; min-width:0; }
+  h1 { margin:0; font-size:17px; font-weight:800; }
+  .doc { font-size:12px; color:#5C5C5C; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  main { flex:1; padding:16px 18px; display:flex; flex-direction:column; gap:14px; }
+  .go { width:100%; min-height:44px; border:0; border-radius:12px; background:#F26B1D; color:#111; font:inherit; font-size:15px; font-weight:800; cursor:pointer; }
+  .go:hover { filter:brightness(.95); }
+  .go:disabled { background:#D6D3CF; cursor:default; }
+  #status { font-size:14px; color:#5C5C5C; }
+  #status.error { color:#9B1C1C; }
+  .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+  .stat { padding:10px; border-radius:12px; background:#F6F5F3; display:flex; flex-direction:column; }
+  .stat b { font-size:20px; font-weight:800; }
+  .stat span { font-size:12px; color:#5C5C5C; }
+  .tip { font-size:12px; color:#5C5C5C; background:#F6F5F3; border-radius:10px; padding:8px 10px; }
+  .item { border:1px solid #E7E5E2; border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
+  .top { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#5C5C5C; }
+  .top .where { margin-left:auto; text-transform:none; letter-spacing:0; font-weight:500; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .ctx { color:#3A3A3A; }
+  .ctx mark { background:#FFF1E8; color:#111; border-radius:3px; padding:0 1px; text-decoration:underline; text-decoration-thickness:2px; text-underline-offset:3px; }
+  .reps { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .orig { text-decoration:line-through; color:#6B6B6B; }
+  .rep { border:0; border-radius:9px; padding:7px 12px; min-height:34px; background:#111; color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+  .rep:hover { background:#333; }
+  .rep.copied { background:#F26B1D; color:#111; }
+  .foot { display:flex; justify-content:flex-end; }
+  .ignore { border:0; background:none; padding:4px; color:#5C5C5C; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .ignore:hover { color:#111; }
+  footer { padding:14px 18px; border-top:1px solid #EFEDEA; text-align:center; font-size:12px; font-weight:600; color:#5C5C5C; }
+</style>
+</head>
+<body>
+<header>
+  <img src="icons/48.png" alt="">
+  <div>
+    <h1>Tiger Type</h1>
+    <div id="docName" class="doc">Google Docs check</div>
+  </div>
+</header>
+<main>
+  <button id="go" class="go">Check this doc</button>
+  <div id="status">Open a Google Doc and click the button.</div>
+  <div id="stats" class="stats" hidden>
+    <div class="stat"><b id="c-spelling">0</b><span>Spelling</span></div>
+    <div class="stat"><b id="c-grammar">0</b><span>Grammar</span></div>
+    <div class="stat"><b id="c-style">0</b><span>Style</span></div>
+  </div>
+  <div id="tip" class="tip" hidden>Tiger Type can't edit Docs directly. Click a suggestion to copy it, then paste it over the mistake. Ctrl+F helps find it.</div>
+  <div id="list"></div>
+</main>
+<footer>By Student Government 2026-2027</footer>
+<script src="sidepanel.js"></script>
+</body>
+</html>

@@ -112,6 +112,33 @@ chrome.tabs.onUpdated.addListener((tabId, info) => {
   if (info.status === "loading") chrome.storage.session.remove("counts_" + tabId);
 });
 
+// ---------- Google Docs ----------
+// Docs draws text on a canvas, so we can't underline it. Instead the side panel downloads
+// the doc as plain text (the same thing File > Download > .txt gives you) and checks that.
+
+function docIdFrom(url) {
+  const m = /^https:\/\/docs\.google\.com\/document\/(?:u\/\d+\/)?d\/([\w-]+)/.exec(url || "");
+  return m ? m[1] : null;
+}
+
+function looksLikeText(r) {
+  return r.ok && /text\/plain/.test(r.headers.get("content-type") || "");
+}
+
+async function getDocText(tabId, url) {
+  const id = docIdFrom(url);
+  if (!id) throw new Error("not a doc");
+  const exportUrl = `https://docs.google.com/document/d/${id}/export?format=txt`;
+  try {
+    const r = await fetch(exportUrl, { credentials: "include" });
+    if (looksLikeText(r)) return (await r.text()).replace(/^\uFEFF/, "");
+  } catch {}
+  // Fall back to asking the Docs tab to download it (same-origin, uses the page's sign-in).
+  const res = await chrome.tabs.sendMessage(tabId, { type: "getDocText", url: exportUrl });
+  if (res && res.ok) return res.text.replace(/^\uFEFF/, "");
+  throw new Error("can't read doc");
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   (async () => {
     try {
@@ -120,6 +147,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (sender.tab) await setCounts(sender.tab.id, sender.frameId || 0, msg.counts);
         sendResponse({ ok: true });
       } else if (msg.type === "getCounts") sendResponse(await getCounts(msg.tabId));
+      else if (msg.type === "getDocText") sendResponse({ ok: true, text: await getDocText(msg.tabId, msg.url) });
+      else if (msg.type === "openDocPanel") {
+        await chrome.storage.session.set({ docTarget: { tabId: msg.tabId, url: msg.url, title: msg.title, at: Date.now() } });
+        sendResponse({ ok: true });
+      }
       else if (msg.type === "check") sendResponse({ ok: true, ...(await check(msg.text)) });
       else if (msg.type === "refresh") {
         policyCache.at = 0;

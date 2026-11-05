@@ -35,7 +35,7 @@ The extension talks to `http://localhost:8000` by default, which is where the in
 |---|---|
 | `backend/` | Python server (FastAPI). Talks to LanguageTool, applies admin settings, serves the admin page at `/admin`. |
 | `extension/` | Chrome extension. Underlines mistakes in text boxes with fix-it cards, plus a popup with issue counts. |
-| `docs-addon/` | Google Docs add-on. Sidebar that checks the whole doc, since extensions can't underline inside Docs. |
+| `docs-addon/` | Google Docs add-on (for later, needs a public server). Sidebar that checks the whole doc. |
 | `windows/` | The Windows launcher and installer script. |
 | `.github/workflows/` | Builds the installer on GitHub's Windows machines and posts it to Releases. |
 | `docker-compose.yml` | Alternative: run everything on a Linux/Mac server with Docker. |
@@ -74,7 +74,7 @@ The installer runs the server on one Windows computer, which is perfect for test
 
 ## Known limits
 
-- **Google Docs gets a sidebar, not inline underlines.** Docs draws text on a canvas that extensions can't read.
+- **Google Docs gets a side panel, not inline underlines.** Docs draws text on a canvas that extensions can't read. In a Doc, click the Tiger Type icon, then **Check this doc**. The panel lists every issue with its paragraph. Click a suggestion to copy it.
 - **Rule-based means fewer catches than Grammarly.** Good at spelling, agreement, punctuation, and commonly confused words. Weak on clarity and tone. That's the price of no AI.
 - **Some fancy editors won't line up perfectly.** Fields marked `spellcheck="false"` (usually code boxes) are skipped.
 - **Max 20,000 characters per check.**

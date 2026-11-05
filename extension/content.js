@@ -43,8 +43,10 @@
   const host = document.createElement("tigertype-root");
   host.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;z-index:2147483647;pointer-events:none;";
   const shadow = host.attachShadow({ mode: "open" });
-  shadow.innerHTML = `
-    <style>
+  // Built with createElement, not innerHTML: Gmail and other Google sites block innerHTML
+  // ("Trusted Types"), which would stop the overlay from ever appearing.
+  const styleEl = document.createElement("style");
+  styleEl.textContent = `
       .u { position:fixed; height:2px; border-radius:1px; pointer-events:none; }
       .mirror { position:fixed; visibility:hidden; pointer-events:none; overflow:hidden; margin:0; }
       .u.dotted { height:0; background:none !important; border-top:2px dotted #6B6B6B; }
@@ -75,11 +77,15 @@
       .note { font-size:12px; color:#5C5C5C; }
       .ignore { border:0; background:none; color:#5C5C5C; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; padding:6px 4px; }
       .ignore:hover { color:#111; }
-    </style>
-    <div id="lines"></div>
-    <div id="badge" class="badge" style="display:none"></div>
-    <div id="card" class="card" style="display:none"></div>
-  `;
+    `;
+  shadow.appendChild(styleEl);
+  for (const [id, cls] of [["lines", ""], ["badge", "badge"], ["card", "card"]]) {
+    const d = document.createElement("div");
+    d.id = id;
+    if (cls) d.className = cls;
+    if (id !== "lines") d.style.display = "none";
+    shadow.appendChild(d);
+  }
   const linesEl = shadow.getElementById("lines");
   const badgeEl = shadow.getElementById("badge");
   const cardEl = shadow.getElementById("card");
@@ -107,9 +113,14 @@
     return null;
   }
 
+  const CODE_EDITORS = '.CodeMirror,.cm-editor,.monaco-editor,.ace_editor,[data-enable-grammarly="false"]';
+
   function wantsChecking(el) {
-    // Sites that explicitly turn spellcheck off (code editors, search boxes) usually mean it.
-    return el.getAttribute("spellcheck") !== "false";
+    // Skip code editors. Don't trust spellcheck="false" on rich editors: Gmail sets it
+    // on the compose box because it runs its own spellcheck.
+    if (el.closest(CODE_EDITORS)) return false;
+    if (el.tagName === "INPUT" && el.getAttribute("spellcheck") === "false") return false;
+    return true;
   }
 
   // ---------- text extraction ----------
@@ -232,7 +243,7 @@
       this.lastText = null;
       this.onInput = () => this.schedule();
       el.addEventListener("input", this.onInput);
-      if (wantsChecking(el)) el.spellcheck = false; // avoid double squiggles with Chrome's own
+      el.spellcheck = false; // avoid double squiggles with Chrome's own
     }
 
     getText() {
@@ -400,8 +411,24 @@
   let cardFor = null; // { checker, index }
   let hideTimer = 0;
 
-  function esc(s) {
-    return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function mk(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function arrowIcon() {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    for (const [k, v] of Object.entries({ class: "arrow", width: 16, height: 16, viewBox: "0 0 24 24", fill: "none",
+      stroke: "#6B6B6B", "stroke-width": 2, "stroke-linecap": "round", "stroke-linejoin": "round", "aria-hidden": "true" })) svg.setAttribute(k, v);
+    for (const d of ["M5 12h14", "M13 6l6 6-6 6"]) {
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", d);
+      svg.append(p);
+    }
+    return svg;
   }
 
   function cancelHide() {
@@ -415,26 +442,35 @@
     const m = checker.matches[index];
     cardFor = { checker, index };
     const reps = m.replacements.slice(0, 4);
-    const arrow = '<svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6B6B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>';
-    cardEl.innerHTML = `
-      <div class="kind"><span class="dot" style="background:${COLORS[m.kind]}"></span>${LABELS[m.kind] || "Grammar"}</div>
-      <div>${esc(m.message)}</div>
-      ${reps.length ? `<div class="reps"><span class="orig">${esc(m.text)}</span>${arrow}${reps
-        .map((r, i) => `<button class="rep" data-i="${i}">${esc(r) || "(remove)"}</button>`)
-        .join("")}</div>` : ""}
-      <div class="line"></div>
-      <div class="foot"><span class="note">Rule-based check, no AI</span><button class="ignore">Ignore</button></div>`;
-    cardEl.querySelectorAll(".rep").forEach((b) =>
-      b.addEventListener("click", () => {
-        checker.apply(index, reps[+b.dataset.i]);
-        hideCard();
-      })
-    );
-    cardEl.querySelector(".ignore").addEventListener("click", () => {
+    cardEl.replaceChildren();
+    const kind = mk("div", "kind");
+    const dot = mk("span", "dot");
+    dot.style.background = COLORS[m.kind] || COLORS.grammar;
+    kind.append(dot, LABELS[m.kind] || "Grammar");
+    cardEl.append(kind, mk("div", "", m.message));
+    if (reps.length) {
+      const row = mk("div", "reps");
+      row.append(mk("span", "orig", m.text), arrowIcon());
+      reps.forEach((r) => {
+        const b = mk("button", "rep", r || "(remove)");
+        b.addEventListener("click", () => {
+          checker.apply(index, r);
+          hideCard();
+        });
+        row.append(b);
+      });
+      cardEl.append(row);
+    }
+    cardEl.append(mk("div", "line"));
+    const foot = mk("div", "foot");
+    const ign = mk("button", "ignore", "Ignore");
+    ign.addEventListener("click", () => {
       checker.ignore(index);
       hideCard();
     });
-    cardEl.style.display = "block";
+    foot.append(mk("span", "note", "Rule-based check, no AI"), ign);
+    cardEl.append(foot);
+    cardEl.style.display = "flex";
     const h = cardEl.offsetHeight;
     let top = hit.bottom + 6;
     if (top + h > innerHeight - 8) top = Math.max(8, hit.top - h - 6);

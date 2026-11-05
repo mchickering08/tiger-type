@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Tiger Type",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Spelling and grammar checking by GCDS Student Government. Rule-based, no AI.",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "sidePanel"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -25,6 +26,15 @@
         "content.js"
       ],
       "all_frames": true,
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://docs.google.com/document/*"
+      ],
+      "js": [
+        "docs.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -48,5 +58,8 @@
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
   }
 }

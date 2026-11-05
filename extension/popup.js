@@ -7,7 +7,7 @@ async function activeTab() {
     const u = new URL(tab.url);
     if (/^https?:$/.test(u.protocol)) host = u.hostname;
   } catch {}
-  return { id: tab.id, host };
+  return { id: tab.id, host, url: tab.url || "", title: tab.title || "" };
 }
 
 async function render() {
@@ -29,6 +29,20 @@ async function render() {
   }
 
   for (const k of ["spelling", "grammar", "style"]) $("c-" + k).textContent = st.active ? counts[k] || 0 : "–";
+
+  // Google Docs: no underlines possible, so offer the whole-doc check instead.
+  const isDoc = /^https:\/\/docs\.google\.com\/document\/(?:u\/\d+\/)?d\//.test(tab.url);
+  $("docsBox").hidden = !isDoc;
+  $("siteRow").hidden = isDoc;
+  $("stats").hidden = isDoc;
+  if (isDoc) {
+    $("checkDoc").disabled = !st.active || !st.online;
+    $("checkDoc").onclick = () => {
+      // sidePanel.open has to run right away inside the click, so don't await anything first.
+      chrome.storage.session.set({ docTarget: { tabId: tab.id, url: tab.url, title: tab.title, at: Date.now() } });
+      chrome.sidePanel.open({ tabId: tab.id }).then(() => window.close());
+    };
+  }
 
   const toggle = $("siteToggle");
   toggle.checked = !st.siteDisabledByUser;
