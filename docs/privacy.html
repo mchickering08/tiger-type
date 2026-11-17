@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tiger Type Privacy Policy</title>
+<link rel="icon" href="icon-128.png">
+<style>
+  :root { --ink:#111111; --muted:#5C5C5C; --line:#E7E5E2; --accent:#F26B1D; --bg:#F6F5F3; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+  header { background:#fff; border-bottom:1px solid var(--line); }
+  .bar { max-width:760px; margin:0 auto; padding:14px 16px; display:flex; align-items:center; gap:12px; }
+  .bar img { width:36px; height:36px; }
+  .bar strong { font-size:18px; font-weight:800; }
+  main { max-width:760px; margin:0 auto; padding:40px 16px 72px; }
+  article { background:#fff; border:1px solid var(--line); border-radius:16px; padding:32px clamp(18px,5vw,40px); }
+  h1 { margin:0 0 4px; font-size:30px; letter-spacing:-0.02em; }
+  .updated { margin:0 0 28px; color:var(--muted); font-size:14px; }
+  h2 { margin:32px 0 8px; font-size:19px; }
+  p, li { margin:0 0 12px; }
+  ul { padding-left:22px; margin:0 0 12px; }
+  .summary { background:#FFF4EC; border:1px solid #F7D3BC; border-radius:12px; padding:16px 18px; margin-bottom:8px; }
+  .summary p { margin:0; }
+  a { color:#9A3D00; }
+  code { background:var(--bg); padding:1px 5px; border-radius:4px; font-size:14px; }
+  footer { text-align:center; color:var(--muted); font-size:13px; margin-top:24px; }
+</style>
+</head>
+<body>
+<header><div class="bar"><img src="icon-128.png" alt=""><strong>Tiger Type</strong></div></header>
+<main>
+<article>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated November 16, 2026</p>
+
+  <div class="summary">
+    <p><strong>Short version:</strong> Tiger Type sends the text you're typing to a Tiger Type server run by your school (or by you) so it can check spelling and grammar. That server checks the text and sends back suggestions. It doesn't save your writing, doesn't use AI, and doesn't share anything with anyone else. Tiger Type has no ads, no tracking, and no analytics.</p>
+  </div>
+
+  <h2>What Tiger Type is</h2>
+  <p>Tiger Type is a spelling and grammar checker made by Greenwich Country Day School Student Government. It's made up of a Chrome extension, an optional Google Docs add-on, and a Tiger Type server. Checking uses <a href="https://github.com/languagetool-org/languagetool">LanguageTool</a>'s open-source grammar rules. No AI or machine learning models are used.</p>
+
+  <h2>What data Tiger Type handles</h2>
+  <ul>
+    <li><strong>Text you type in text boxes</strong> on websites where Tiger Type is turned on. When you pause typing, that text is sent to the Tiger Type server to be checked.</li>
+    <li><strong>The text of a Google Doc</strong>, only when you use Tiger Type in that doc (the "Check this doc" button or the Tiger Type add-on).</li>
+    <li><strong>Settings stored in your browser:</strong> the server address and the sites where you've turned Tiger Type off. These stay in your browser.</li>
+    <li><strong>Issue counts for open tabs</strong> (like "2 spelling, 1 grammar"), kept in your browser's memory so the popup can show them. They're cleared when you close the tab.</li>
+  </ul>
+  <p>Tiger Type doesn't collect your name, email address, browsing history, location, or any other personal information.</p>
+
+  <h2>Where your text goes</h2>
+  <p>Text is sent only to the Tiger Type server set in the extension. At school, that's a server controlled by Greenwich Country Day School. If you installed the Tiger Type server on your own computer, it's that computer (<code>localhost</code>). Text isn't sent to the makers of Tiger Type, to LanguageTool's company, or to any other third party.</p>
+
+  <h2>What the server does with it</h2>
+  <ul>
+    <li>Checks it against grammar and spelling rules and sends back the issues it finds.</li>
+    <li>Doesn't save the text, write it to logs, or keep it after the check is done.</li>
+    <li>Saves only the admin settings (on or off, which categories are checked, the school dictionary, blocked sites). None of those settings contain student writing.</li>
+  </ul>
+
+  <h2>Google Docs</h2>
+  <p>When you click "Check this doc," the extension downloads the doc as plain text using your own Google sign-in, the same as File → Download → Plain text, and checks it. The Tiger Type add-on reads your doc's text so it can check it. If you leave highlighting on, it adds highlight colors to mistakes and replaces text when you click a suggestion. It only removes highlights in Tiger Type's own colors, never ones you added. Nothing is saved outside your doc.</p>
+
+  <h2>What Tiger Type never does</h2>
+  <ul>
+    <li>Sell, rent, or share your data</li>
+    <li>Use your data for ads, profiling, or anything other than checking your writing</li>
+    <li>Use your writing to train AI</li>
+    <li>Run on sites your school has blocked, or on sites where you've turned it off</li>
+  </ul>
+
+  <h2>School controls</h2>
+  <p>School administrators can turn Tiger Type off for everyone, choose which kinds of mistakes are checked, add words to a school dictionary, and block sites. They can't see what students write.</p>
+
+  <h2>Changes</h2>
+  <p>If this policy changes, the new version will be posted on this page with a new date.</p>
+
+  <h2>Contact</h2>
+  <p>Questions? Open an issue at <a href="https://github.com/mchickering08/tiger-type/issues">github.com/mchickering08/tiger-type</a> or contact Greenwich Country Day School Student Government.</p>
+</article>
+<footer>By Student Government 2026-2027</footer>
+</main>
+</body>
+</html>

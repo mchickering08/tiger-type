@@ -576,13 +576,4 @@
       }
     });
   });
-
-  // Small hook for automated tests.
-  window.addEventListener("tigertype-test-state", () => {
-    document.documentElement.dataset.tigertypeState = JSON.stringify({
-      state: current && current.state,
-      matches: current ? current.matches.map((m) => m.text) : [],
-      underlines: linesEl.childElementCount,
-    });
-  });
 })();
