@@ -10,7 +10,7 @@
 AppId={{6F1B2C8E-7D4A-4E3B-9C21-5A0F7E3D9B11}
 AppName=Tiger Type
 AppVersion={#AppVersion}
-AppPublisher=GCDS Student Government
+AppPublisher=Mary Chickering
 DefaultDirName={localappdata}\Programs\Tiger Type
 DefaultGroupName=Tiger Type
 DisableProgramGroupPage=yes

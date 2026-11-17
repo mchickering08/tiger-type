@@ -4,7 +4,7 @@ Everything the Chrome Web Store asks for, ready to paste. Files are in this fold
 
 ## Before you start (one-time)
 
-1. **Get your Student Government advisor's OK.** The listing says "By Student Government" and names GCDS, so the school should know before it goes live.
+1. **Give the school a heads-up.** The listing names GCDS, so check with IT or your advisor before it goes live.
 2. **Turn on the privacy policy page.** On GitHub, go to the tiger-type repo → **Settings** → **Pages**. Under "Build and deployment," set Source to **Deploy from a branch**, Branch to **main**, folder to **/docs**, then click **Save**. After a minute, this should load:
    `https://mchickering08.github.io/tiger-type/privacy.html`
    (If your GitHub Pages uses a custom domain, GitHub redirects to it. Use whatever address the Pages screen shows.)
@@ -16,10 +16,10 @@ Dashboard → **New item** → upload **TigerType-Extension-v1.0.0.zip**.
 
 ## Store listing tab
 
-**Description** (the short summary comes from the extension itself: "Spelling and grammar checking by GCDS Student Government. Rule-based, no AI.")
+**Description** (the short summary comes from the extension itself: "Spelling and grammar checking for GCDS students, by Mary Chickering. Rule-based, no AI.")
 
 ```
-Tiger Type is a spelling and grammar checker made by Greenwich Country Day School Student Government for GCDS students.
+Tiger Type is a spelling and grammar checker made by Mary Chickering for Greenwich Country Day School students.
 
 It underlines mistakes as you type in almost any text box: email, discussion posts, forms, and more. Hover over an underline to see what's wrong, and click a suggestion to fix it.
 
@@ -41,7 +41,7 @@ Admins can turn Tiger Type off for everyone, choose which kinds of mistakes are 
 
 Tiger Type needs a Tiger Type server to check writing. Your school's IT team sets this up.
 
-By Student Government 2026-2027
+By Mary Chickering
 ```
 
 **Category:** Education

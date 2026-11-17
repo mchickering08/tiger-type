@@ -1,6 +1,6 @@
 # Tiger Type
 
-A spelling and grammar checker for GCDS, by Student Government 2026-2027. No AI: it uses LanguageTool's hand-written grammar rules, running on a server the school controls, with an admin page for on/off, categories, a school dictionary, and blocked sites.
+A spelling and grammar checker for GCDS, by Mary Chickering. No AI: it uses LanguageTool's hand-written grammar rules, running on a server the school controls, with an admin page for on/off, categories, a school dictionary, and blocked sites.
 
 ```
 student's Chrome                     one server (Windows PC or school server)
