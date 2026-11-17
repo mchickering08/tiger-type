@@ -6,5 +6,3 @@ build/
 dist/
 windows/app.py
 *.spec
-
-# Built zip is attached to releases; keep the store copy here for reference
